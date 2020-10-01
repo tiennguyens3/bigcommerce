@@ -6,23 +6,6 @@ Please note that this checkout is a good starting and reference point, but is no
 
 ## Getting Started
 
-### Installation
-
-To pull in this example checkout for quick demos, grab the latest build via the CDN:
-
-```
-<script src="https://cdn11.bigcommerce.com/s-65xv2m9zph/content/20180927.js"></script>
-```
-
-
-### Usage
-
-Add a `<div>` element above the `<script>` tag with the id of `checkout-app` in the page where you want the checkout to be render:
-
-```
-<div id="checkout-app"></div>
-```
-
 ## Development
 
 To run this example locally, simply run the following:
@@ -30,18 +13,23 @@ To run this example locally, simply run the following:
 ```
 npm install && npm run dev
 ```
+This will generate a checkout loader file in `dist/main.js`
 
-To build:
-
+In another console, run:
 ```
-npm run build
+npm run dev:server
 ```
+This will serve the `dist` directory locally.
 
+Once those steps have been successful:
+1. Go to Control Panel > Advanced Settings > Checkout.
+2. Choose "Custom Checkout" option
+3. Find the "Custom Checkout Settings" options and in the "Script URL" field enter: `http://127.0.0.1:8080/main.js`
+4. Go to your store and checkout. The checkout example should load.
 
 ## See Also
 
-* [Integrating Checkout JS SDK Example into Cornerstone](https://developer.bigcommerce.com/stencil-docs/template-files/customize-stencil-checkout/checkout-js-sdk/getting-started-in-vanilla-js)
-* [Integrating Checkout JS SDK Example into Cornerstone CDN Example](https://developer.bigcommerce.com/stencil-docs/template-files/customize-stencil-checkout/checkout-js-sdk/implement-a-custom-checkout)
+* [Installing a Custom Checkout](https://developer.bigcommerce.com/stencil-docs/customizing-checkout/installing-custom-checkouts)
 * [Checkout JS SDK](https://github.com/bigcommerce/checkout-sdk-js)
 * Storefront APIs
     - [Storefront Cart](https://developer.bigcommerce.com/api-reference/cart-checkout/storefront-cart-api)
