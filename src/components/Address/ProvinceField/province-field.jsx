@@ -21,6 +21,7 @@ export default class ProvinceInput extends React.PureComponent {
                         label={ 'State' }
                         value={ this.props.stateOrProvince }
                         onChange={ this.props.onChange }
+                        optional={ this.props.country && !this.props.country.requiresState }
                         width={ 'half' } />
                 }
             </Fragment>
