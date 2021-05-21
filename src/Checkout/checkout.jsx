@@ -12,6 +12,7 @@ import Shipping from '../Shipping/shipping';
 import Layout from './Layout/layout';
 import LoadingState from './LoadingState/loading-state';
 import styles from './checkout.scss';
+import createOrderUrl from './../config'
 
 export default class Checkout extends React.PureComponent {
     constructor(props) {
@@ -199,7 +200,7 @@ export default class Checkout extends React.PureComponent {
         this.setState({ isPlacingOrder: true });
         event.preventDefault();
 
-        if (payment.method === 'waave') {
+        if (payment.methodId === 'waave') {
             let { data } = this.state;
 
             const products = [];
@@ -227,7 +228,7 @@ export default class Checkout extends React.PureComponent {
                 links
             };
 
-            fetch('http://localhost/bigcommerce/create-order', {
+            fetch(createOrderUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -252,6 +253,7 @@ export default class Checkout extends React.PureComponent {
                 });
             })
             .catch(error => {
+                console.log(error);
                 this.setState({ isPlacingOrder: false });
             });
 
