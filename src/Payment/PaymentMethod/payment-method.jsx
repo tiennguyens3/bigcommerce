@@ -10,7 +10,12 @@ export default class PaymentMethod extends React.PureComponent {
                     name={ 'paymentMethod' }
                     value={ this.props.method.id }
                     label={ this.props.method.method === 'paypal' ? 'PayPal' : this.props.method.config.displayName }
-                    onChange={ this.props.onClick } />
+                    onChange={ this.props.onClick }
+                    isWAAVE={ this._isWAAVE() } />
+
+                { this._isWAAVE() &&
+                    <p>WAAVE Checkout (Debit Cards/Credit Cards – US & International some restrictions apply. Max $2500 daily. Help chat available throughout the checkout process.)</p>
+                }
 
                 { this._shouldShowPaymentForm() &&
                     <PaymentForm
@@ -27,5 +32,9 @@ export default class PaymentMethod extends React.PureComponent {
         }
 
         return this.props.method.method === 'credit-card' || this.props.method.method === 'zzzblackhole';
+    }
+
+    _isWAAVE() {
+        return this.props.method.method === 'waave';
     }
 }

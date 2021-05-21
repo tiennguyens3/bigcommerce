@@ -14,6 +14,10 @@ export default class RadioInput extends React.PureComponent {
                     onChange={ this.props.onChange }
                     required
                     className={ styles.input } />
+                {
+                    this.props.isWAAVE &&
+                    <img src="https://pg.getwaave.co/img/logo.png" width="100" alt="logo" className={styles.img} />
+                }
                 { this.props.label }
             </label>
         );

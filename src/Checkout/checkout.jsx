@@ -22,7 +22,11 @@ export default class Checkout extends React.PureComponent {
         this.state = {
             isPlacingOrder: false,
             showSignInPanel: false,
+            paymentMethods: [],
+            WF: {}
         };
+
+        this.WForm = React.createRef();
     }
 
     componentDidMount() {
@@ -36,6 +40,20 @@ export default class Checkout extends React.PureComponent {
             this.unsubscribe = this.service.subscribe((state) => {
                 this.setState(state);
             });
+
+            const paymentMethods = this.state.data.getPaymentMethods();
+            paymentMethods.push({
+                id: 'waave',
+                method: 'waave',
+                gateway: null,
+                config: {
+                    displayName: 'WAAVE Payment Gateway'
+                }
+            });
+
+            this.setState(state => {
+                return { ...state, paymentMethods };
+            })
         });
     }
 
@@ -109,7 +127,7 @@ export default class Checkout extends React.PureComponent {
 
                                 <Payment
                                     errors={ errors.getSubmitOrderError() }
-                                    methods={ data.getPaymentMethods() }
+                                    methods={ this.state.paymentMethods }
                                     onClick={ (name, gateway) => this.service.initializePayment({ methodId: name, gatewayId: gateway }) }
                                     onChange={ (payment) => this.setState({ payment }) } />
 
@@ -141,6 +159,18 @@ export default class Checkout extends React.PureComponent {
                             checkout={ data.getCheckout() }
                             cartLink={ (data.getConfig()).links.cartLink } />
                     </div>
+
+                    <form ref={this.WForm} method="GET" action={this.state.WF.gateway_url}>
+                        <input type="hidden" name="access_key" value={this.state.WF.access_key} />
+                        <input type="hidden" name="venue_id" value={this.state.WF.venue_id} />
+                        <input type="hidden" name="reference_id" value={this.state.WF.reference_id} />
+                        <input type="hidden" name="amount" value={this.state.WF.amount} />
+                        <input type="hidden" name="currency" value={this.state.WF.currency} />
+                        <input type="hidden" name="return_url" value={this.state.WF.return_url} />
+                        <input type="hidden" name="cancel_url" value={this.state.WF.cancel_url} />
+                        <input type="hidden" name="callback_url" value={this.state.WF.callback_url} />
+                        <input type="hidden" name="store_id" value={this.state.WF.store_id} />
+                    </form>
                 </Fragment>
             } />
         );
@@ -168,6 +198,65 @@ export default class Checkout extends React.PureComponent {
 
         this.setState({ isPlacingOrder: true });
         event.preventDefault();
+
+        if (payment.method === 'waave') {
+            let { data } = this.state;
+
+            const products = [];
+
+            const lineItems = data.getCart().lineItems;
+            lineItems.customItems.map(item => products.push(item));
+            lineItems.digitalItems.map(item => products.push(item));
+            lineItems.giftCertificates.map(item => products.push(item));
+            lineItems.physicalItems.map(item => products.push(item));
+
+            const discount_amount = data.getCoupons().reduce((accumulator, currentValue) => {
+                return accumulator + currentValue.discountedAmount
+            }, 0);
+
+            const { storeProfile, links } = data.getConfig();
+
+            const body = {
+                products,
+                billing_address: billingAddressPayload,
+                shipping_address: data.getShippingAddress(),
+                shipping_option: data.getSelectedShippingOption(),
+                discount_amount,
+                customer_id: data.getCustomer().id,
+                storeProfile,
+                links
+            };
+
+            fetch('http://localhost/bigcommerce/create-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(body)
+            })
+            .then(response => response.json())
+            .then(result => {
+                this.setState(state => {
+                    return { ...state, WF: result}
+                })
+                this.setState({ isPlacingOrder: false });
+
+                // Clear the cart and redirect to WAAVE Payment Gateway
+                const cart = data.getCart()
+                fetch('api/storefront/carts/' + cart.id, {
+                    method: "DELETE",
+                    credentials: 'include'
+                }).then(() => {
+                    this.WForm.current.submit();
+                });
+            })
+            .catch(error => {
+                this.setState({ isPlacingOrder: false });
+            });
+
+            return;
+        }
 
         Promise.all([
             isGuest ? this.service.continueAsGuest(this.state.customer) : Promise.resolve(),

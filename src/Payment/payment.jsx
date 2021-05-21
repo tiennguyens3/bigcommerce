@@ -50,6 +50,10 @@ export default class Payment extends React.PureComponent {
             gatewayId: gateway,
         });
 
+        if (id === 'waave') {
+            return;
+        }
+
         this.props.onClick(id, gateway);
     }
 }
